@@ -25,7 +25,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Create database tables
-Base.metadata.create_all(bind=engine)
+# DISABLED: Tables are created by init scripts or restored from backup
+# Base.metadata.create_all(bind=engine)
 
 # Create FastAPI application
 app = FastAPI(
