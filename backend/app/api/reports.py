@@ -41,6 +41,9 @@ async def export_inquiries(
         end_dt = dt.strptime(end_date, '%Y-%m-%d') + timedelta(days=1)  # Include entire end date
         query = query.filter(ContactLog.created_at < end_dt)
     
+    # Order by newest first
+    query = query.order_by(ContactLog.created_at.desc())
+    
     contact_logs = query.all()
     
     print(f"📊 Exporting {len(contact_logs)} inquiries (start_date={start_date}, end_date={end_date})")
@@ -128,6 +131,9 @@ async def export_analytics(
         end_dt = dt.strptime(end_date, '%Y-%m-%d') + timedelta(days=1)
         query = query.filter(Product.created_at < end_dt)
     
+    # Order by newest first
+    query = query.order_by(Product.created_at.desc())
+    
     products = query.all()
     
     print(f"📊 Exporting analytics for {len(products)} products (start_date={start_date}, end_date={end_date})")
@@ -200,6 +206,9 @@ async def export_products(
     if end_date:
         end_dt = dt.strptime(end_date, '%Y-%m-%d') + timedelta(days=1)
         query = query.filter(Product.created_at < end_dt)
+    
+    # Order by newest first
+    query = query.order_by(Product.created_at.desc())
     
     products = query.all()
     

@@ -2,22 +2,22 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:14-alpine
-    container_name: shg_postgres
+    container_name: swayameluru_postgres
     restart: unless-stopped
     ports:
       - "127.0.0.1:5433:5432"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-shg_marketplace}
-      POSTGRES_USER: ${POSTGRES_USER:-shg_user}
+      POSTGRES_DB: ${POSTGRES_DB:-swayameluru_db}
+      POSTGRES_USER: ${POSTGRES_USER:-swayameluru_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - ../SwayamEluru_Shared_Data/postgres:/var/lib/postgresql/data
       - ./backend/database:/docker-entrypoint-initdb.d:ro
     networks:
-      - shg_network
+      - swayameluru_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-shg_user} -d ${POSTGRES_DB:-shg_marketplace}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-swayameluru_user} -d ${POSTGRES_DB:-swayameluru_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,7 +27,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: shg_backend
+    container_name: swayameluru_backend
     restart: unless-stopped
     ports:
       - "127.0.0.1:8003:8000"
@@ -43,7 +43,7 @@ services:
       PORT: ${PORT:-8000}
       
       # Database
-      DATABASE_URL: postgresql://${POSTGRES_USER:-shg_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-shg_marketplace}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-swayameluru_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-swayameluru_db}
       DB_ECHO: "False"
       
       # JWT
@@ -95,7 +95,7 @@ services:
       - ../SwayamEluru_Shared_Data/storage:/app/storage
       - ../SwayamEluru_Shared_Data/logs:/app/logs
     networks:
-      - shg_network
+      - swayameluru_network
     depends_on:
       postgres:
         condition: service_healthy
@@ -111,12 +111,12 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: shg_frontend
+    container_name: swayameluru_frontend
     restart: unless-stopped
     ports:
       - "127.0.0.1:3003:80"
     networks:
-      - shg_network
+      - swayameluru_network
     depends_on:
       - backend
     healthcheck:
@@ -127,6 +127,6 @@ services:
       start_period: 40s
 
 networks:
-  shg_network:
+  swayameluru_network:
     driver: bridge
-    name: shg_network
+    name: swayameluru_network

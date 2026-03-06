@@ -264,17 +264,56 @@ const ProductDetailPage = () => {
 
             <div style={{ 
               display: 'flex', 
-              flexDirection: 'column', 
-              gap: '0.75rem',
-              fontSize: '1.125rem',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '2rem',
               marginTop: '0'
             }}>
-              <div>
-                <strong style={{ fontSize: '1.125rem' }}>Category:</strong> {product.category?.name || 'N/A'}
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: '0.75rem',
+                fontSize: '1.125rem',
+                flex: '1'
+              }}>
+                <div>
+                  <strong style={{ fontSize: '1.125rem' }}>Category:</strong> {product.category?.name || 'N/A'}
+                </div>
+                <div>
+                  <strong style={{ fontSize: '1.125rem' }}>Farmer:</strong> {product.shg?.name || 'N/A'}
+                </div>
               </div>
-              <div>
-                <strong style={{ fontSize: '1.125rem' }}>SHG:</strong> {product.shg?.name || 'N/A'}
-              </div>
+              
+              {/* SHG Person Image */}
+              {product.shg?.shg_image && (
+                <div style={{ 
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <img 
+                    src={`${API_BASE_URL}${product.shg.shg_image}`}
+                    alt={product.shg.name}
+                    style={{ 
+                      width: '120px', 
+                      height: '120px', 
+                      objectFit: 'cover', 
+                      borderRadius: '50%',
+                      border: '3px solid var(--color-primary)',
+                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                  <span style={{
+                    fontSize: '0.875rem',
+                    color: 'var(--color-text-light)',
+                    fontWeight: '500',
+                    textAlign: 'center'
+                  }}>
+                    {product.shg.name}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="product-description">
@@ -282,7 +321,7 @@ const ProductDetailPage = () => {
               <p>{product.description}</p>
             </div>
 
-            {(product.youtube_link || product.instagram_link || product.shg?.whatsapp_number) && (
+            {(product.youtube_link || product.instagram_link) && (
               <div className="product-social">
                 <h4>See More</h4>
                 <div className="social-links">
@@ -298,17 +337,6 @@ const ProductDetailPage = () => {
                       <span>Instagram</span>
                     </a>
                   )}
-                  {product.shg?.whatsapp_number && (
-                    <a 
-                      href={`https://wa.me/91${product.shg.whatsapp_number}?text=Hi, I'm interested in ${encodeURIComponent(product.name)}`}
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="social-link social-whatsapp"
-                    >
-                      <FaWhatsapp size={24} />
-                      <span>WhatsApp</span>
-                    </a>
-                  )}
                 </div>
               </div>
             )}
@@ -320,7 +348,7 @@ const ProductDetailPage = () => {
                 fullWidth
                 onClick={() => setShowContactModal(true)}
               >
-                📞 Contact Vendor
+                📞 Contact
               </Button>
               
               <p className="contact-note">
@@ -407,14 +435,13 @@ const ProductDetailPage = () => {
                 )}
               </div>
               <div className="form-group">
-                <label>Location *</label>
+                <label>Location</label>
                 <input 
                   type="text" 
                   name="location"
                   value={formData.location}
                   onChange={handleInputChange}
                   placeholder="Your city/state" 
-                  required 
                 />
               </div>
               <div className="form-group">
@@ -445,23 +472,6 @@ const ProductDetailPage = () => {
             <h2>✅ Inquiry Submitted!</h2>
             <p>Thank you for your interest. Here are the vendor details:</p>
             
-            {/* SHG Photo */}
-            {product.shg?.shg_image && (
-              <div style={{ textAlign: 'center', margin: '1rem 0' }}>
-                <img 
-                  src={`${API_BASE_URL}${product.shg.shg_image}`}
-                  alt={product.shg.name}
-                  style={{ 
-                    width: '180px', 
-                    height: '180px', 
-                    objectFit: 'cover', 
-                    borderRadius: '50%',
-                    border: '3px solid var(--color-primary)'
-                  }}
-                />
-              </div>
-            )}
-            
             <div className="vendor-details">
               <div className="detail-item">
                 <strong>SHG Name:</strong> {product.shg?.name || 'N/A'}
@@ -482,7 +492,35 @@ const ProductDetailPage = () => {
               </div>
             </div>
             
-            <Button variant="primary" size="large" fullWidth onClick={() => setShowSuccessModal(false)} style={{ marginTop: '1.5rem' }}>
+            {/* WhatsApp Contact Button */}
+            {product.shg?.whatsapp_number && (
+              <a 
+                href={`https://wa.me/91${product.shg.whatsapp_number}?text=Hi, I'm interested in ${encodeURIComponent(product.name)}`}
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '0.875rem 1.5rem',
+                  marginTop: '1rem',
+                  backgroundColor: '#25D366',
+                  color: 'white',
+                  textAlign: 'center',
+                  textDecoration: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#20BA5A'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#25D366'}
+              >
+                <FaWhatsapp size={20} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                Contact on WhatsApp
+              </a>
+            )}
+            
+            <Button variant="primary" size="large" fullWidth onClick={() => setShowSuccessModal(false)} style={{ marginTop: '1rem' }}>
               Close
             </Button>
           </div>

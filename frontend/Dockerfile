@@ -7,6 +7,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
+# Set build-time environment variable for empty API URL
+ENV VITE_API_URL=
+
 # Copy .env file for build-time environment variables
 COPY .env* ./
 

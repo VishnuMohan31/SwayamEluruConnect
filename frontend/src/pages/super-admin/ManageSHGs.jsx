@@ -12,6 +12,7 @@ const ManageSHGs = () => {
   const [statusFilter, setStatusFilter] = useState('')
   const [shgs, setSHGs] = useState([])
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)  // Prevent duplicate submissions
   
   // Location dropdowns state
   const [mandals, setMandals] = useState([])
@@ -208,6 +209,9 @@ const ManageSHGs = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    // Prevent duplicate submissions
+    if (submitting) return
+
     // Validate phone number has exactly 10 digits
     if (!validatePhoneNumber(formData.mobileNumber)) {
       showToast('Mobile number must be 10 digits', 'error')
@@ -215,6 +219,8 @@ const ManageSHGs = () => {
     }
 
     try {
+      setSubmitting(true)
+      
       let shgImageUrl = formData.photoPreview
 
       // Upload photo if new file selected
@@ -228,7 +234,7 @@ const ManageSHGs = () => {
         logger.success('Photo Uploaded', shgImageUrl)
       } else if (shgImageUrl && shgImageUrl.startsWith('http')) {
         // Strip API_BASE_URL from existing image URL to get relative path
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8003'
+        const API_BASE_URL = import.meta.env.VITE_API_URL || ''
         shgImageUrl = shgImageUrl.replace(API_BASE_URL, '')
       }
 
@@ -267,6 +273,8 @@ const ManageSHGs = () => {
     } catch (error) {
       logger.error('Save SHG Failed', error.message)
       showToast('Failed to save SHG', 'error')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -294,7 +302,7 @@ const ManageSHGs = () => {
   const handleEdit = (shg) => {
     setEditingSHG(shg)
     const sameNumber = shg.whatsappNumber === shg.mobileNumber
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8003'
+    const API_BASE_URL = import.meta.env.VITE_API_URL || ''
     setFormData({
       type: 'SHG',
       name: shg.name || '',
@@ -436,7 +444,7 @@ const ManageSHGs = () => {
                     <td>
                       {shg.shgImage ? (
                         <img 
-                          src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8003'}${shg.shgImage}`}
+                          src={`${import.meta.env.VITE_API_URL || ''}${shg.shgImage}`}
                           alt={shg.name}
                           style={{ 
                             width: '50px', 
@@ -753,8 +761,8 @@ const ManageSHGs = () => {
                 <Button type="button" variant="outline" onClick={closeModal}>
                   Cancel
                 </Button>
-                <Button type="submit" variant="primary">
-                  {editingSHG ? 'Update SHG' : 'Add SHG'}
+                <Button type="submit" variant="primary" disabled={submitting}>
+                  {submitting ? 'Saving...' : (editingSHG ? 'Update SHG' : 'Add SHG')}
                 </Button>
               </div>
             </form>

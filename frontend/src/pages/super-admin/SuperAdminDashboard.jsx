@@ -63,7 +63,7 @@ const SuperAdminDashboard = () => {
       setLoading(true)
       logger.info('Fetching Dashboard Metrics', `type=${metricType}, period=${shgTimePeriod}`)
       
-      const data = await api.get(`/api/analytics/metrics/?type=${metricType}&period=${shgTimePeriod}`)
+      const data = await api.get(`/api/analytics/metrics?type=${metricType}&period=${shgTimePeriod}`)
       logger.success('Fetched Dashboard Metrics', data)
       
       setTopSHGInquiries(data.topSHGs || [])

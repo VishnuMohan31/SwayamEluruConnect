@@ -12,6 +12,7 @@ const ManageCategories = () => {
   const [statusFilter, setStatusFilter] = useState('')
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)  // Prevent duplicate submissions
   const [formData, setFormData] = useState({
     name: '',
     description: ''
@@ -54,7 +55,12 @@ const ManageCategories = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    // Prevent duplicate submissions
+    if (submitting) return
+
     try {
+      setSubmitting(true)
+      
       const categoryData = {
         name: formData.name,
         description: formData.description
@@ -80,6 +86,8 @@ const ManageCategories = () => {
     } catch (error) {
       logger.error('Save Category Failed', error.message)
       showToast(error.message || 'Failed to save category', 'error')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -351,8 +359,8 @@ const ManageCategories = () => {
                 <Button type="button" variant="outline" onClick={closeModal}>
                   Cancel
                 </Button>
-                <Button type="submit" variant="primary">
-                  {editingCategory ? 'Update Category' : 'Add Category'}
+                <Button type="submit" variant="primary" disabled={submitting}>
+                  {submitting ? 'Saving...' : (editingCategory ? 'Update Category' : 'Add Category')}
                 </Button>
               </div>
             </form>

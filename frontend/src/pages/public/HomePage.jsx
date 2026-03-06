@@ -27,8 +27,8 @@ const HomePage = () => {
       const [categoriesRes, allProductsRes, recentRes, contactedRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/categories/`),
         fetch(`${API_BASE_URL}/api/products/`),
-        fetch(`${API_BASE_URL}/api/products/recent/?limit=4`),
-        fetch(`${API_BASE_URL}/api/products/most-contacted/?limit=4`)
+        fetch(`${API_BASE_URL}/api/products/recent?limit=4`),
+        fetch(`${API_BASE_URL}/api/products/most-contacted?limit=4`)
       ])
       
       if (categoriesRes.ok && allProductsRes.ok) {
@@ -134,6 +134,7 @@ const HomePage = () => {
                   key={category.id}
                   to={`/products?category=${category.id}`}
                   className="category-card"
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 >
                   <div className="category-image">
                     {category.sampleImage ? (
@@ -193,7 +194,11 @@ const HomePage = () => {
               </div>
               
               <div className="section-footer">
-                <Link to="/products" className="btn btn-outline btn-large">
+                <Link 
+                  to="/products" 
+                  className="btn btn-outline btn-large"
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                >
                   Explore More Products
                 </Link>
               </div>
@@ -225,7 +230,11 @@ const HomePage = () => {
               </div>
               
               <div className="section-footer">
-                <Link to="/products" className="btn btn-outline btn-large">
+                <Link 
+                  to="/products" 
+                  className="btn btn-outline btn-large"
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                >
                   See All New Arrivals
                 </Link>
               </div>
