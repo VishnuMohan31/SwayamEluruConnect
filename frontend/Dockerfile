@@ -33,14 +33,15 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Set proper permissions
 RUN chown -R nginx:nginx /usr/share/nginx/html && \
-    chmod -R 755 /usr/share/nginx/html
+    chmod -R 755 /usr/share/nginx/html && \
+    apk add --no-cache wget
 
 # Expose port
 EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://127.0.0.1:80/health || exit 1
+    CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
 
 # Start nginx (runs as root by default, which is needed for port 80)
 CMD ["nginx", "-g", "daemon off;"]
