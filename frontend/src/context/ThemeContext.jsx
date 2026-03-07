@@ -76,29 +76,25 @@ const themes = {
       textLight: '#166534',
       border: '#BBF7D0',
     }
-  },
-  'dark-dracula': {
-    name: 'Dark Theme',
-    colors: {
-      primary: '#BD93F9',
-      secondary: '#FF79C6',
-      accent: '#50FA7B',
-      background: '#282A36',
-      surface: '#44475A',
-      text: '#F8F8F2',
-      textLight: '#6272A4',
-      border: '#44475A',
-    }
   }
 }
 
 export const ThemeProvider = ({ children }) => {
   const [currentTheme, setCurrentTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'tribal-earth'
+    const savedTheme = localStorage.getItem('theme')
+    // If saved theme doesn't exist in themes object, use default
+    return themes[savedTheme] ? savedTheme : 'tribal-earth'
   })
 
   useEffect(() => {
     const theme = themes[currentTheme]
+    
+    // Safety check: if theme doesn't exist, reset to default
+    if (!theme) {
+      setCurrentTheme('tribal-earth')
+      return
+    }
+    
     const root = document.documentElement
 
     // Apply theme colors as CSS variables
