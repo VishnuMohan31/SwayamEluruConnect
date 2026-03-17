@@ -78,7 +78,7 @@ async def get_recent_products(
 @router.get("/", response_model=List[ProductResponse])
 async def get_products(
     skip: int = 0,
-    limit: int = 100,
+    limit: Optional[int] = None,
     category_id: Optional[str] = None,
     shg_id: Optional[str] = None,
     search: Optional[str] = None,

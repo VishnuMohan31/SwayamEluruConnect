@@ -12,6 +12,8 @@ const ManageProducts = () => {
   const [categoryFilter, setCategoryFilter] = useState('')
   const [shgFilter, setShgFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 50
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [shgs, setSHGs] = useState([])
@@ -175,7 +177,17 @@ const ManageProducts = () => {
     setCategoryFilter('')
     setShgFilter('')
     setStatusFilter('')
+    setCurrentPage(1)
   }
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, categoryFilter, shgFilter, statusFilter])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
+  const paginatedProducts = filteredProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 
   const handleEdit = (product) => {
     setEditingProduct(product)
@@ -535,7 +547,7 @@ const ManageProducts = () => {
             </thead>
             <tbody>
               {filteredProducts.length > 0 ? (
-                filteredProducts.map(product => (
+                paginatedProducts.map(product => (
                   <tr key={product.id}>
                     <td>{product.id}</td>
                     <td>
@@ -630,6 +642,46 @@ const ManageProducts = () => {
           </table>
         </div>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: '1px solid var(--color-border)', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
+          >
+            ← Prev
+          </button>
+          {[...Array(totalPages)].map((_, i) => {
+            const page = i + 1
+            if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  style={{ padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--color-border)', cursor: 'pointer', backgroundColor: currentPage === page ? 'var(--color-primary)' : 'transparent', color: currentPage === page ? 'white' : 'inherit', fontWeight: currentPage === page ? '600' : '400' }}
+                >
+                  {page}
+                </button>
+              )
+            } else if (page === currentPage - 2 || page === currentPage + 2) {
+              return <span key={page}>...</span>
+            }
+            return null
+          })}
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: '1px solid var(--color-border)', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1 }}
+          >
+            Next →
+          </button>
+          <span style={{ fontSize: '0.875rem', color: 'var(--color-text-light)', marginLeft: '0.5rem' }}>
+            {filteredProducts.length} total | Page {currentPage} of {totalPages}
+          </span>
+        </div>
+      )}
 
       {/* Add/Edit Product Modal */}
       {showModal && (

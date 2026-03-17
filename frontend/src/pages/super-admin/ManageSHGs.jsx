@@ -9,7 +9,11 @@ const ManageSHGs = () => {
   const [showModal, setShowModal] = useState(false)
   const [editingSHG, setEditingSHG] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [mandalFilter, setMandalFilter] = useState('')
+  const [villageFilter, setVillageFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 50
   const [shgs, setSHGs] = useState([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)  // Prevent duplicate submissions
@@ -120,6 +124,10 @@ const ManageSHGs = () => {
     }
   }
 
+  // Unique mandals and villages derived from loaded SHG data
+  const uniqueMandals = [...new Set(shgs.map(s => s.mandal).filter(Boolean))].sort()
+  const uniqueVillagesForFilter = [...new Set(shgs.filter(s => !mandalFilter || s.mandal === mandalFilter).map(s => s.village).filter(Boolean))].sort()
+
   // Filter logic (treat missing status as 'Active' so filters work with existing data)
   const filteredSHGs = shgs.filter(shg => {
     const search = (searchQuery || '').trim().toLowerCase()
@@ -132,13 +140,32 @@ const ManageSHGs = () => {
       (shg.village && shg.village.toLowerCase().includes(search))
     const effectiveStatus = shg.status || 'Active'
     const matchesStatus = !statusFilter || effectiveStatus === statusFilter
-    return matchesSearch && matchesStatus
+    const matchesMandal = !mandalFilter || shg.mandal === mandalFilter
+    const matchesVillage = !villageFilter || shg.village === villageFilter
+    return matchesSearch && matchesStatus && matchesMandal && matchesVillage
   })
 
   const clearFilters = () => {
     setSearchQuery('')
+    setMandalFilter('')
+    setVillageFilter('')
     setStatusFilter('')
+    setCurrentPage(1)
   }
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, mandalFilter, villageFilter, statusFilter])
+
+  // Reset village filter when mandal changes
+  useEffect(() => {
+    setVillageFilter('')
+  }, [mandalFilter])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredSHGs.length / ITEMS_PER_PAGE)
+  const paginatedSHGs = filteredSHGs.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -371,7 +398,7 @@ const ManageSHGs = () => {
 
       {/* Filters Section */}
       <div className="dashboard-card" style={{ marginBottom: '1.5rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '1rem', alignItems: 'end' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: '1rem', alignItems: 'end' }}>
           {/* Search - Takes remaining space */}
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
@@ -389,6 +416,39 @@ const ManageSHGs = () => {
                 borderRadius: '8px',
                 fontSize: '0.875rem'
               }}
+            />
+          </div>
+
+          {/* Mandal Filter */}
+          <div style={{ minWidth: '160px' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+              Mandal
+            </label>
+            <CustomSelect
+              value={mandalFilter}
+              onChange={(e) => setMandalFilter(e.target.value)}
+              options={[
+                { value: '', label: 'All Mandals' },
+                ...uniqueMandals.map(m => ({ value: m, label: m }))
+              ]}
+              placeholder="All Mandals"
+            />
+          </div>
+
+          {/* Village Filter */}
+          <div style={{ minWidth: '160px' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>
+              Village
+            </label>
+            <CustomSelect
+              value={villageFilter}
+              onChange={(e) => setVillageFilter(e.target.value)}
+              disabled={!mandalFilter}
+              options={[
+                { value: '', label: !mandalFilter ? 'Select mandal first' : 'All Villages' },
+                ...uniqueVillagesForFilter.map(v => ({ value: v, label: v }))
+              ]}
+              placeholder="All Villages"
             />
           </div>
 
@@ -438,7 +498,7 @@ const ManageSHGs = () => {
             </thead>
             <tbody>
               {filteredSHGs.length > 0 ? (
-                filteredSHGs.map(shg => (
+                paginatedSHGs.map(shg => (
                   <tr key={shg.id}>
                     <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shg.id}</td>
                     <td>
@@ -521,6 +581,46 @@ const ManageSHGs = () => {
           </table>
         </div>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: '1px solid var(--color-border)', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
+          >
+            ← Prev
+          </button>
+          {[...Array(totalPages)].map((_, i) => {
+            const page = i + 1
+            if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  style={{ padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--color-border)', cursor: 'pointer', backgroundColor: currentPage === page ? 'var(--color-primary)' : 'transparent', color: currentPage === page ? 'white' : 'inherit', fontWeight: currentPage === page ? '600' : '400' }}
+                >
+                  {page}
+                </button>
+              )
+            } else if (page === currentPage - 2 || page === currentPage + 2) {
+              return <span key={page}>...</span>
+            }
+            return null
+          })}
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: '1px solid var(--color-border)', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1 }}
+          >
+            Next →
+          </button>
+          <span style={{ fontSize: '0.875rem', color: 'var(--color-text-light)', marginLeft: '0.5rem' }}>
+            {filteredSHGs.length} total | Page {currentPage} of {totalPages}
+          </span>
+        </div>
+      )}
 
       {/* Add/Edit SHG Modal */}
       {showModal && (
