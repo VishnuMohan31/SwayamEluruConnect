@@ -299,7 +299,7 @@ const ManageSHGs = () => {
       closeModal()
     } catch (error) {
       logger.error('Save SHG Failed', error.message)
-      showToast('Failed to save SHG', 'error')
+      showToast(error.message || 'Failed to save SHG', 'error')
     } finally {
       setSubmitting(false)
     }
