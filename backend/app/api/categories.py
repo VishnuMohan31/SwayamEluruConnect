@@ -4,7 +4,7 @@ Category routes
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from typing import List
+from typing import List, Optional
 import uuid
 
 from ..core.deps import get_db, get_current_admin
@@ -17,7 +17,7 @@ router = APIRouter()
 @router.get("/", response_model=List[CategoryResponse])
 async def get_categories(
     skip: int = 0,
-    limit: int = 100,
+    limit: Optional[int] = None,
     include_inactive: bool = False,
     db: Session = Depends(get_db)
 ):
@@ -26,10 +26,14 @@ async def get_categories(
     if not include_inactive:
         query = query.filter(Category.is_active == True)
     
-    # Sort by: Recently updated first, then by name
     query = query.order_by(Category.updated_at.desc().nullslast(), Category.name.asc())
     
-    categories = query.offset(skip).limit(limit).all()
+    if limit is not None:
+        query = query.offset(skip).limit(limit)
+    else:
+        query = query.offset(skip)
+    
+    categories = query.all()
     return categories
 
 

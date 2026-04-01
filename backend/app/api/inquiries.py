@@ -3,7 +3,7 @@ Inquiry routes
 """
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 import uuid
 
 from ..core.deps import get_db, get_current_admin
@@ -17,12 +17,17 @@ router = APIRouter()
 @router.get("/", response_model=List[InquiryResponse])
 async def get_inquiries(
     skip: int = 0,
-    limit: int = 100,
+    limit: Optional[int] = None,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_admin)
 ):
     """Get all contact logs (admin only)"""
-    contact_logs = db.query(ContactLog).offset(skip).limit(limit).all()
+    query = db.query(ContactLog)
+    if limit is not None:
+        query = query.offset(skip).limit(limit)
+    else:
+        query = query.offset(skip)
+    contact_logs = query.all()
     return contact_logs
 
 

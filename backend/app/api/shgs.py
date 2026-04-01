@@ -4,7 +4,7 @@ SHG (Self Help Group) routes
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from typing import List
+from typing import List, Optional
 import uuid
 import os
 from pathlib import Path
@@ -21,9 +21,9 @@ router = APIRouter()
 @router.get("/", response_model=List[SHGResponse])
 async def get_shgs(
     skip: int = 0,
-    limit: int = 100,
+    limit: Optional[int] = None,
     include_inactive: bool = False,
-    type: str = None,  # Filter by type: 'SHG'
+    type: str = None,
     db: Session = Depends(get_db)
 ):
     """Get all SHGs"""
@@ -33,10 +33,14 @@ async def get_shgs(
     if type and type in ['SHG']:
         query = query.filter(SHG.type == type)
     
-    # Sort by: Recently updated first, then by name
     query = query.order_by(SHG.updated_at.desc().nullslast(), SHG.name.asc())
     
-    shgs = query.offset(skip).limit(limit).all()
+    if limit is not None:
+        query = query.offset(skip).limit(limit)
+    else:
+        query = query.offset(skip)
+    
+    shgs = query.all()
     return shgs
 
 

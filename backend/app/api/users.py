@@ -19,7 +19,7 @@ router = APIRouter()
 async def get_users(
     role: Optional[str] = None,
     skip: int = 0,
-    limit: int = 100,
+    limit: Optional[int] = None,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_admin)
 ):
@@ -29,7 +29,12 @@ async def get_users(
     if role:
         query = query.filter(User.role == role)
     
-    users = query.offset(skip).limit(limit).all()
+    if limit is not None:
+        query = query.offset(skip).limit(limit)
+    else:
+        query = query.offset(skip)
+    
+    users = query.all()
     return users
 
 
